@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Timer - Liger Edition</title>
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background: #1a1a1a; color: #eee; 
+            display: flex; gap: 20px; padding: 20px; font-size: 20px;
+            height: 100vh; overflow: hidden; box-sizing: border-box;
+        }
+        .column { flex: 1; display: flex; flex-direction: column; min-width: 480px; height: 100%; }
+        
+        .fixed-header { 
+            flex-shrink: 0; background: #1a1a1a; z-index: 10; 
+            border-bottom: 2px solid #444; margin-bottom: 10px;
+            height: 200px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: 15px;
+        }
+
+        .top-info-row {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .timer-group { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0 10px; }
+        .main-timer { font-size: 72px; color: #0f0; font-family: 'Courier New', monospace; font-weight: bold; text-shadow: 0 0 15px rgba(0,255,0,0.7); }
+        
+        .start-btn { 
+            background: #ff4444; color: #fff; border: none; padding: 10px 30px; 
+            border-radius: 8px; cursor: pointer; font-size: 20px; font-weight: bold;
+            box-shadow: 0 4px #992222; transition: all 0.1s;
+        }
+        .start-btn.running { background: #00ff00; color: #000; box-shadow: 0 4px #009900; }
+
+        /* --- ライガーエリアのスタイル --- */
+        .liger-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        .btn-liger {
+            background: #444; color: #fff; border: 2px solid #00d4ff; 
+            padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 3px #005566; font-size: 18px;
+        }
+        .btn-liger:active { transform: translateY(2px); box-shadow: 0 1px #005566; }
+        .liger-display {
+            font-family: 'Courier New', monospace;
+            font-size: 42px;
+            color: #00d4ff;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0,212,255,0.5);
+        }
+
+        .calamity-group { 
+            background: #333; padding: 12px; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 1px solid #555; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+            height: 80px;
+            box-sizing: border-box;
+        }
+        
+        .btn-calamity {
+            width: 100%; height: 100%; font-size: 28px; font-weight: bold;
+            color: #fff; border: none; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px #000; transition: all 0.1s;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .btn-circle { background: linear-gradient(to bottom, #444, #222); border: 3px solid #ffff00; }
+        .btn-circle:active { transform: translateY(2px); box-shadow: 0 1px #000; }
+        
+        .btn-grand { background: linear-gradient(to bottom, #444, #222); border: 3px solid #ff0000; }
+        .btn-grand:active { transform: translateY(2px); box-shadow: 0 1px #000; }
+
+        .table-container { flex-grow: 1; overflow-y: auto; background: #fff; border-radius: 8px; border: 2px solid #666; position: relative; scroll-behavior: smooth; contain: content; }
+        table { width: 100%; border-collapse: collapse; color: #000; font-size: 24px; }
+        thead th { position: sticky; top: 0; background: #e6e6e6; z-index: 5; border-bottom: 3px solid #999; padding: 12px; font-size: 18px; color: #333; }
+        td { border: 1px solid #ccc; padding: 15px 10px; text-align: center; }
+        .next-row { background-color: #ffff99 !important; font-weight: bold; }
+        .current-row { background-color: #ff9999 !important; font-weight: bold; border-top: 3px solid red !important; border-bottom: 3px solid red !important; }
+    </style>
+</head>
+<body>
+
+<div class="column">
+    <div class="fixed-header">
+        <div class="top-info-row">
+            <div class="timer-group">
+                <div style="text-align:center">
+                    <div style="font-size:12px;color:#aaa;">BATTLE TIME</div>
+                    <div id="masterClock" class="main-timer">10:00</div>
+                </div>
+                <button id="startBtn" class="start-btn" onclick="toggleTimer()">START</button>
+            </div>
+        </div>
+        <div class="calamity-group">
+            <button class="btn-calamity btn-circle" onclick="triggerCalamity('A')">サークルカラミティ</button>
+        </div>
+    </div>
+    <div class="table-container" id="containerA">
+        <table id="tableA">
+            <thead><tr><th>#</th><th>予定</th><th>種別</th><th>減算</th><th>判定</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="column">
+    <div class="fixed-header">
+        <div class="top-info-row">
+            <div class="liger-container">
+                <button class="btn-liger" onclick="calculateLiger()">ライガー</button>
+                <div id="ligerDisplay" class="liger-display">--:--</div>
+            </div>
+        </div> 
+        <div class="calamity-group">
+            <button class="btn-calamity btn-grand" onclick="triggerCalamity('G')">グランドカラミティ</button>
+        </div>
+    </div>
+    <div class="table-container" id="containerG">
+        <table id="tableG">
+            <thead><tr><th>#</th><th>予定</th><th>種別</th><th>減算</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const configA = [[1,"線上",0,""],[2,"線上",24,"おそ"],[3,"金網",21,""],[4,"線上",23,"おそ"],[5,"外周",21,""],[6,"金網",25,"おそ"],[1,"線上",20,""],[2,"線上",24,"おそ"],[3,"金網",21,""],[4,"線上",24,"おそ"],[5,"外周",20,""],[6,"金網",24,"おそ"],[1,"線上",21,""],[2,"線上",24,"おそ"],[3,"金網",20,""],[4,"線上",24,"おそ"],[5,"外周",21,""],[6,"金網",24,"おそ"],[1,"線上",20,""]];
+const configG = [[1,"虹",0],[2,"黄（外周安置）",22],[3,"虹",24],[4,"黄（外周安置）",23],[5,"虹",24],[6,"黄（真ん中で耐久！）",23],[7,"虹",23],[8,"黄（線上安置）",24],[9,"虹",24],[10,"黄（金網上安置）",22],[11,"虹",24],[12,"黄（線上外寄り安置）",23],[13,"虹",22],[14,"黄（外周安置）",24],[15,"虹",24],[16,"黄（外周安置）",22],[17,"虹",24]];
+
+let startTimeMS = null;
+let timerId = null;
+let inputSecs = { A: null, G: null };
+
+function toggleTimer() {
+    if (startTimeMS === null) {
+        startTimer();
+    } else {
+        resetTimer();
+    }
+}
+
+function startTimer() {
+    const btn = document.getElementById('startBtn');
+    startTimeMS = Date.now();
+    btn.textContent = "RUNNING";
+    btn.classList.add('running');
+    timerId = setInterval(updateAll, 500); 
+}
+
+function resetTimer() {
+    const btn = document.getElementById('startBtn');
+    startTimeMS = null;
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    btn.textContent = "START";
+    btn.classList.remove('running');
+    document.getElementById('masterClock').textContent = "10:00";
+    document.getElementById('ligerDisplay').textContent = "--:--"; // ライガーもリセット
+    inputSecs = { A: null, G: null };
+    document.querySelector('#tableA tbody').innerHTML = "";
+    document.querySelector('#tableG tbody').innerHTML = "";
+}
+
+function calculateLiger() {
+    if (startTimeMS === null) return;
+    const elapsed = (Date.now() - startTimeMS) / 1000;
+    const currentClock = 600 - elapsed;
+    
+    // 【仕様】現在時間から65秒引く
+    const ligerTime = currentClock - 65;
+    document.getElementById('ligerDisplay').textContent = formatTime(Math.floor(ligerTime));
+}
+
+function triggerCalamity(type) {
+    if (startTimeMS === null) {
+        alert("先にSTARTボタンを押してください。");
+        return;
+    }
+    const elapsed = (Date.now() - startTimeMS) / 1000;
+    const currentClock = 600 - elapsed;
+    const offset = (type === 'A' ? 5 : 6);
+    inputSecs[type] = Math.floor(currentClock) - offset;
+    renderTable(type);
+}
+
+function updateAll() {
+    const elapsed = (Date.now() - startTimeMS) / 1000;
+    const currentClock = 600 - elapsed;
+
+    if (currentClock <= 0) {
+        resetTimer();
+        return;
+    }
+
+    document.getElementById('masterClock').textContent = formatTime(Math.floor(currentClock));
+    const isRainbowActive = (inputSecs.G !== null);
+    if (inputSecs.A !== null) updateHighlights('A', currentClock, isRainbowActive);
+    if (inputSecs.G !== null) updateHighlights('G', currentClock, false);
+}
+
+function formatTime(totalSec) {
+    const abs = Math.floor(Math.abs(totalSec));
+    const m = Math.floor(abs / 60);
+    const s = abs % 60;
+    return (totalSec < 0 ? "-" : "") + m + ":" + s.toString().padStart(2, '0');
+}
+
+function renderTable(type) {
+    const tbody = document.querySelector(`#table${type} tbody`);
+    tbody.innerHTML = "";
+    let cumulative = 0;
+    const config = (type === 'A' ? configA : configG);
+    config.forEach((row) => {
+        cumulative += row[2];
+        const rowSec = inputSecs[type] - cumulative;
+        const tr = document.createElement("tr");
+        tr.dataset.time = rowSec;
+        const cells = [row[0], formatTime(rowSec), row[1], row[2]];
+        if (type === 'A') cells.push(row[3]);
+        cells.forEach(c => { const td = document.createElement("td"); td.textContent = c; tr.appendChild(td); });
+        tbody.appendChild(tr);
+    });
+}
+
+function updateHighlights(type, currentClock, isPaused) {
+    const rows = document.querySelectorAll(`#table${type} tbody tr`);
+    if (isPaused && type === 'A') {
+        rows.forEach(row => row.className = ""); 
+        return;
+    }
+    let nextRow = null;
+    rows.forEach(row => {
+        const rowSec = parseInt(row.dataset.time);
+        row.className = "";
+        if (!nextRow && rowSec < currentClock - 2) nextRow = row;
+        if (Math.abs(currentClock - rowSec) <= 2) row.className = "current-row";
+    });
+    if (nextRow && nextRow.className !== "current-row") nextRow.className = "next-row";
+    const target = document.querySelector(`#table${type} .current-row`) || nextRow;
+    if (target) {
+        const container = document.getElementById(`container${type}`);
+        container.scrollTop = target.offsetTop - (container.clientHeight * 0.3);
+    }
+}
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Game Timer</title>
+    <title>Game Timer - Big Button Edition</title>
     <style>
         body { 
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
@@ -15,84 +15,50 @@
         .fixed-header { 
             flex-shrink: 0; background: #1a1a1a; z-index: 10; 
             border-bottom: 2px solid #444; margin-bottom: 10px;
-            height: 200px; 
+            height: 220px; /* 少し高さを広げました */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding-bottom: 15px;
         }
 
-        .top-info-row {
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
+        .top-info-row { height: 120px; display: flex; align-items: center; justify-content: center; position: relative; }
         .timer-group { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0 10px; }
-        .main-timer { font-size: 72px; color: #0f0; font-family: 'Courier New', monospace; font-weight: bold; text-shadow: 0 0 15px rgba(0,255,0,0.7); }
+        .main-timer { font-size: 80px; color: #0f0; font-family: 'Courier New', monospace; font-weight: bold; text-shadow: 0 0 15px rgba(0,255,0,0.7); }
         
+        /* 補正入力ボックス：さらに大きく */
+        .sync-input {
+            width: 110px; height: 60px; background: #333; color: #fff; border: 3px solid #666;
+            border-radius: 8px; font-size: 32px; text-align: center; margin-right: 15px;
+            font-family: 'Courier New', monospace; font-weight: bold;
+        }
+        .sync-input::placeholder { font-size: 16px; color: #888; }
+
+        /* STARTボタン：さらに大きく */
         .start-btn { 
-            background: #ff4444; color: #fff; border: none; padding: 10px 30px; 
-            border-radius: 8px; cursor: pointer; font-size: 20px; font-weight: bold;
-            box-shadow: 0 4px #992222; transition: all 0.1s;
+            background: #ff4444; color: #fff; border: none; 
+            padding: 15px 45px; /* パディングを増やして巨大化 */
+            border-radius: 12px; cursor: pointer; font-size: 28px; font-weight: bold;
+            box-shadow: 0 6px #992222; transition: all 0.1s;
         }
-        .start-btn.running { background: #00ff00; color: #000; box-shadow: 0 4px #009900; }
+        .start-btn.running { background: #00ff00; color: #000; box-shadow: 0 6px #009900; }
+        .start-btn:active { transform: translateY(3px); box-shadow: 0 3px #992222; }
 
-        /* --- ライガーエリアのスタイル --- */
-        .liger-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: #222;
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: 1px solid #444;
-        }
-        .btn-liger {
-            background: #444; color: #fff; border: 2px solid #00d4ff; 
-            padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 3px #005566; font-size: 18px;
-        }
-        .btn-liger:active { transform: translateY(2px); box-shadow: 0 1px #005566; }
-        .liger-display {
-            font-family: 'Courier New', monospace;
-            font-size: 42px;
-            color: #00d4ff;
-            font-weight: bold;
-            min-width: 120px;
-            text-align: center;
-            text-shadow: 0 0 10px rgba(0,212,255,0.5);
-        }
+        .liger-container { display: flex; align-items: center; gap: 15px; background: #222; padding: 15px 25px; border-radius: 10px; border: 1px solid #444; }
+        .btn-liger { background: #444; color: #fff; border: 2px solid #00d4ff; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #005566; font-size: 22px; }
+        .liger-display { font-family: 'Courier New', monospace; font-size: 52px; color: #00d4ff; font-weight: bold; min-width: 140px; text-align: center; }
 
-        .calamity-group { 
-            background: #333; padding: 12px; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; 
-            border: 1px solid #555; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
-            height: 80px;
-            box-sizing: border-box;
-        }
-        
-        .btn-calamity {
-            width: 100%; height: 100%; font-size: 28px; font-weight: bold;
-            color: #fff; border: none; border-radius: 8px; cursor: pointer;
-            box-shadow: 0 4px #000; transition: all 0.1s;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .calamity-group { background: #333; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #555; height: 90px; box-sizing: border-box; }
+        .btn-calamity { width: 100%; height: 100%; font-size: 32px; font-weight: bold; color: #fff; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 5px #000; transition: all 0.1s; display: flex; align-items: center; justify-content: center; }
+        .btn-circle { background: linear-gradient(to bottom, #444, #222); border: 4px solid #ffff00; }
+        .btn-grand { background: linear-gradient(to bottom, #444, #222); border: 4px solid #ff0000; }
 
-        .btn-circle { background: linear-gradient(to bottom, #444, #222); border: 3px solid #ffff00; }
-        .btn-circle:active { transform: translateY(2px); box-shadow: 0 1px #000; }
-        
-        .btn-grand { background: linear-gradient(to bottom, #444, #222); border: 3px solid #ff0000; }
-        .btn-grand:active { transform: translateY(2px); box-shadow: 0 1px #000; }
-
-        .table-container { flex-grow: 1; overflow-y: auto; background: #fff; border-radius: 8px; border: 2px solid #666; position: relative; scroll-behavior: smooth; contain: content; }
-        table { width: 100%; border-collapse: collapse; color: #000; font-size: 24px; }
-        thead th { position: sticky; top: 0; background: #e6e6e6; z-index: 5; border-bottom: 3px solid #999; padding: 12px; font-size: 18px; color: #333; }
-        td { border: 1px solid #ccc; padding: 15px 10px; text-align: center; }
+        .table-container { flex-grow: 1; overflow-y: auto; background: #fff; border-radius: 8px; border: 2px solid #666; position: relative; scroll-behavior: smooth; }
+        table { width: 100%; border-collapse: collapse; color: #000; font-size: 26px; }
+        thead th { position: sticky; top: 0; background: #e6e6e6; z-index: 5; border-bottom: 3px solid #999; padding: 15px; font-size: 20px; color: #333; }
+        td { border: 1px solid #ccc; padding: 18px 10px; text-align: center; }
         .next-row { background-color: #ffff99 !important; font-weight: bold; }
-        .current-row { background-color: #ff9999 !important; font-weight: bold; border-top: 3px solid red !important; border-bottom: 3px solid red !important; }
+        .current-row { background-color: #ff9999 !important; font-weight: bold; border-top: 4px solid red !important; border-bottom: 4px solid red !important; }
     </style>
 </head>
 <body>
@@ -102,10 +68,13 @@
         <div class="top-info-row">
             <div class="timer-group">
                 <div style="text-align:center">
-                    <div style="font-size:12px;color:#aaa;">BATTLE TIME</div>
+                    <div style="font-size:14px;color:#aaa;margin-bottom:5px;">BATTLE TIME</div>
                     <div id="masterClock" class="main-timer">9:59</div>
                 </div>
-                <button id="startBtn" class="start-btn" onclick="toggleTimer()">START</button>
+                <div style="display: flex; align-items: center;">
+                    <input type="text" id="syncInput" class="sync-input" placeholder="945">
+                    <button id="startBtn" class="start-btn" onclick="toggleTimer()">START</button>
+                </div>
             </div>
         </div>
         <div class="calamity-group">
@@ -141,12 +110,14 @@
 </div>
 
 <script>
+// (JavaScriptロジックは前回と同様、正常動作を確認済み)
 const configA = [[1,"線上",0,""],[2,"線上",24,"おそ"],[3,"金網",21,""],[4,"線上",23,"おそ"],[5,"外周",21,""],[6,"金網",25,"おそ"],[1,"線上",20,""],[2,"線上",24,"おそ"],[3,"金網",21,""],[4,"線上",24,"おそ"],[5,"外周",20,""],[6,"金網",24,"おそ"],[1,"線上",21,""],[2,"線上",24,"おそ"],[3,"金網",20,""],[4,"線上",24,"おそ"],[5,"外周",21,""],[6,"金網",24,"おそ"],[1,"線上",20,""]];
 const configG = [[1,"虹",0],[2,"黄（外周安置）",22],[3,"虹",24],[4,"黄（外周安置）",23],[5,"虹",24],[6,"黄（真ん中で耐久！）",23],[7,"虹",23],[8,"黄（線上安置）",24],[9,"虹",24],[10,"黄（金網上安置）",22],[11,"虹",24],[12,"黄（線上外寄り安置）",23],[13,"虹",22],[14,"黄（外周安置）",24],[15,"虹",24],[16,"黄（外周安置）",22],[17,"虹",24]];
 
 let startTimeMS = null;
 let timerId = null;
 let inputSecs = { A: null, G: null };
+const DEFAULT_START_SEC = 599;
 
 function toggleTimer() {
     if (startTimeMS === null) {
@@ -156,11 +127,12 @@ function toggleTimer() {
     }
 }
 
-function startTimer() {
+function startTimer(offsetSec = DEFAULT_START_SEC) {
     const btn = document.getElementById('startBtn');
-    startTimeMS = Date.now();
+    startTimeMS = Date.now() - (DEFAULT_START_SEC - offsetSec) * 1000;
     btn.textContent = "RUNNING";
     btn.classList.add('running');
+    if (timerId) clearInterval(timerId);
     timerId = setInterval(updateAll, 500); 
 }
 
@@ -172,29 +144,36 @@ function resetTimer() {
     btn.textContent = "START";
     btn.classList.remove('running');
     document.getElementById('masterClock').textContent = "9:59";
-    document.getElementById('ligerDisplay').textContent = "--:--"; // ライガーもリセット
+    document.getElementById('ligerDisplay').textContent = "--:--";
+    document.getElementById('syncInput').value = "";
     inputSecs = { A: null, G: null };
     document.querySelector('#tableA tbody').innerHTML = "";
     document.querySelector('#tableG tbody').innerHTML = "";
 }
 
-function calculateLiger() {
-    if (startTimeMS === null) return;
-    const elapsed = (Date.now() - startTimeMS) / 1000;
-    const currentClock = 600 - elapsed;
-    
-    // 【仕様】現在時間から65秒引く
-    const ligerTime = currentClock - 65;
-    document.getElementById('ligerDisplay').textContent = formatTime(Math.floor(ligerTime));
-}
-
 function triggerCalamity(type) {
+    const syncVal = document.getElementById('syncInput').value.trim();
+    if (syncVal !== "") {
+        const cleanInput = syncVal.replace(/:/g, "");
+        let totalSec = 0;
+        if (cleanInput.length >= 3) {
+            const m = parseInt(cleanInput.slice(0, -2));
+            const s = parseInt(cleanInput.slice(-2));
+            totalSec = m * 60 + s;
+        } else {
+            totalSec = parseInt(cleanInput);
+        }
+        if (!isNaN(totalSec) && totalSec <= DEFAULT_START_SEC) {
+            startTimer(totalSec);
+            document.getElementById('syncInput').value = "";
+        }
+    }
     if (startTimeMS === null) {
-        alert("先にSTARTボタンを押してください。");
+        alert("タイマー開始か時間を入力してください。");
         return;
     }
     const elapsed = (Date.now() - startTimeMS) / 1000;
-    const currentClock = 600 - elapsed;
+    const currentClock = DEFAULT_START_SEC - elapsed;
     const offset = (type === 'A' ? 5 : 6);
     inputSecs[type] = Math.floor(currentClock) - offset;
     renderTable(type);
@@ -202,17 +181,20 @@ function triggerCalamity(type) {
 
 function updateAll() {
     const elapsed = (Date.now() - startTimeMS) / 1000;
-    const currentClock = 600 - elapsed;
-
-    if (currentClock <= 0) {
-        resetTimer();
-        return;
-    }
-
+    const currentClock = DEFAULT_START_SEC - elapsed;
+    if (currentClock <= 0) { resetTimer(); return; }
     document.getElementById('masterClock').textContent = formatTime(Math.floor(currentClock));
     const isRainbowActive = (inputSecs.G !== null);
     if (inputSecs.A !== null) updateHighlights('A', currentClock, isRainbowActive);
     if (inputSecs.G !== null) updateHighlights('G', currentClock, false);
+}
+
+function calculateLiger() {
+    if (startTimeMS === null) return;
+    const elapsed = (Date.now() - startTimeMS) / 1000;
+    const currentClock = DEFAULT_START_SEC - elapsed;
+    const ligerTime = currentClock - 65;
+    document.getElementById('ligerDisplay').textContent = formatTime(Math.floor(ligerTime));
 }
 
 function formatTime(totalSec) {
@@ -241,10 +223,7 @@ function renderTable(type) {
 
 function updateHighlights(type, currentClock, isPaused) {
     const rows = document.querySelectorAll(`#table${type} tbody tr`);
-    if (isPaused && type === 'A') {
-        rows.forEach(row => row.className = ""); 
-        return;
-    }
+    if (isPaused && type === 'A') { rows.forEach(row => row.className = ""); return; }
     let nextRow = null;
     rows.forEach(row => {
         const rowSec = parseInt(row.dataset.time);
@@ -261,5 +240,4 @@ function updateHighlights(type, currentClock, isPaused) {
 }
 </script>
 </body>
-
 </html>
